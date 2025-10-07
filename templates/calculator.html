@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator - Flask App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .calculator {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .display {
+            background: #f5f5f5;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            font-size: 32px;
+            text-align: right;
+            min-height: 80px;
+            word-wrap: break-word;
+            word-break: break-all;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        button {
+            padding: 20px;
+            font-size: 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-number {
+            background: #ffffff;
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-operator {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-operator:hover {
+            background: #5568d3;
+        }
+
+        .btn-clear {
+            background: #ff6b6b;
+            color: white;
+            grid-column: span 2;
+        }
+
+        .btn-clear:hover {
+            background: #ee5a52;
+        }
+
+        .btn-equals {
+            background: #51cf66;
+            color: white;
+            grid-column: span 2;
+        }
+
+        .btn-equals:hover {
+            background: #40c057;
+        }
+
+        .btn-zero {
+            grid-column: span 2;
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            text-align: center;
+            margin-top: 10px;
+            min-height: 20px;
+            font-size: 14px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧮 Calculator</h1>
+        
+        <div class="calculator">
+            <div class="display" id="display">0</div>
+            
+            <div class="buttons">
+                <button class="btn-clear" onclick="clearDisplay()">C</button>
+                <button class="btn-operator" onclick="appendToDisplay('/')">/</button>
+                <button class="btn-operator" onclick="appendToDisplay('*')">×</button>
+                
+                <button class="btn-number" onclick="appendToDisplay('7')">7</button>
+                <button class="btn-number" onclick="appendToDisplay('8')">8</button>
+                <button class="btn-number" onclick="appendToDisplay('9')">9</button>
+                <button class="btn-operator" onclick="appendToDisplay('-')">−</button>
+                
+                <button class="btn-number" onclick="appendToDisplay('4')">4</button>
+                <button class="btn-number" onclick="appendToDisplay('5')">5</button>
+                <button class="btn-number" onclick="appendToDisplay('6')">6</button>
+                <button class="btn-operator" onclick="appendToDisplay('+')">+</button>
+                
+                <button class="btn-number" onclick="appendToDisplay('1')">1</button>
+                <button class="btn-number" onclick="appendToDisplay('2')">2</button>
+                <button class="btn-number" onclick="appendToDisplay('3')">3</button>
+                <button class="btn-operator" onclick="appendToDisplay('.')">.</button>
+                
+                <button class="btn-number btn-zero" onclick="appendToDisplay('0')">0</button>
+                <button class="btn-equals" onclick="calculate()">=</button>
+            </div>
+            
+            <div class="error-message" id="error"></div>
+        </div>
+        
+        <div class="footer">
+            Built with Flask 💜
+        </div>
+    </div>
+
+    <script>
+        let currentDisplay = '0';
+        let lastResult = null;
+
+        function updateDisplay() {
+            document.getElementById('display').textContent = currentDisplay;
+            document.getElementById('error').textContent = '';
+        }
+
+        function clearDisplay() {
+            currentDisplay = '0';
+            lastResult = null;
+            updateDisplay();
+        }
+
+        function appendToDisplay(value) {
+            if (currentDisplay === '0' || lastResult !== null) {
+                if (value === '.' || value === '+' || value === '-' || value === '*' || value === '/') {
+                    if (lastResult !== null) {
+                        currentDisplay = lastResult + value;
+                        lastResult = null;
+                    } else {
+                        currentDisplay = value;
+                    }
+                } else {
+                    currentDisplay = value;
+                    lastResult = null;
+                }
+            } else {
+                currentDisplay += value;
+            }
+            updateDisplay();
+        }
+
+        function calculate() {
+            try {
+                // Replace × with * for evaluation
+                const expression = currentDisplay.replace(/×/g, '*').replace(/−/g, '-');
+                
+                // Simple client-side evaluation
+                const result = Function('"use strict"; return (' + expression + ')')();
+                
+                if (isNaN(result) || !isFinite(result)) {
+                    throw new Error('Invalid calculation');
+                }
+                
+                currentDisplay = result.toString();
+                lastResult = currentDisplay;
+                updateDisplay();
+            } catch (error) {
+                document.getElementById('error').textContent = 'Error: Invalid expression';
+                console.error('Calculation error:', error);
+            }
+        }
+
+        // Keyboard support
+        document.addEventListener('keydown', function(event) {
+            const key = event.key;
+            
+            if (key >= '0' && key <= '9') {
+                appendToDisplay(key);
+            } else if (key === '.') {
+                appendToDisplay('.');
+            } else if (key === '+' || key === '-' || key === '*' || key === '/') {
+                appendToDisplay(key);
+            } else if (key === 'Enter' || key === '=') {
+                event.preventDefault();
+                calculate();
+            } else if (key === 'Escape' || key === 'c' || key === 'C') {
+                clearDisplay();
+            } else if (key === 'Backspace') {
+                if (currentDisplay.length > 1) {
+                    currentDisplay = currentDisplay.slice(0, -1);
+                } else {
+                    currentDisplay = '0';
+                }
+                updateDisplay();
+            }
+        });
+    </script>
+</body>
+</html>
+
