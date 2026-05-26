@@ -35,9 +35,6 @@ def _safe_eval(node):
         if isinstance(node.value, (int, float)):
             return node.value
         raise ValueError(f"Unsupported constant: {node.value!r}")
-    # Backwards-compat for Python <3.8 AST (ast.Num)
-    if isinstance(node, ast.Num):  # pragma: no cover
-        return node.n
     if isinstance(node, ast.BinOp):
         op_type = type(node.op)
         if op_type not in _BIN_OPS:
